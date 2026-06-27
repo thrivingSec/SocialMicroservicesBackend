@@ -15,7 +15,7 @@ services:
       - rabbitmq
   indentity-service:
     build: 
-      context: ./indentity-service
+      context: ./identity-service
       dockerfile: Dockerfile
     container_name: identityServiceContainer
     ports:
