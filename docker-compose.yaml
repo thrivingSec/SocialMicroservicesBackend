@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: 
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: apiGatewayContainer
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URI=redis://redis:6379
+    depends_on:
+      - redis
+      - rabbitmq
+  indentity-service:
+    build: 
+      context: ./indentity-service
+      dockerfile: Dockerfile
+    container_name: identityServiceContainer
+    ports:
+      - "3001:3001"
+    environment:
+      - REDIS_URI=redis://redis:6379
+      - RABBITMQ_URI=amqp://rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+  post-service:
+    build: 
+      context: ./post-service
+      dockerfile: Dockerfile
+    container_name: postServiceContainer
+    ports:
+      - "3002:3002"
+    environment:
+      - REDIS_URI=redis://redis:6379
+      - RABBITMQ_URI=amqp://rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+  media-service:
+    build: 
+      context: ./media-service
+      dockerfile: Dockerfile
+    container_name: mediaServiceContainer
+    ports:
+      - "3003:3003"
+    environment:
+      - REDIS_URI=redis://redis:6379
+      - RABBITMQ_URI=amqp://rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+  search-service:
+    build: 
+      context: ./search-service
+      dockerfile: Dockerfile
+    container_name: searchServiceContainer
+    ports:
+      - "3004:3004"
+    environment:
+      - REDIS_URI=redis://redis:6379
+      - RABBITMQ_URI=amqp://rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+  util-service:
+    build: 
+      context: ./util-service
+      dockerfile: Dockerfile
+    container_name: utilServiceContainer
+    ports:
+      - "3004:3004"
+    environment:
+      - REDIS_URI=redis://redis:6379
+      - RABBITMQ_URI=amqp://rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+  
+  redis:
+    image: redis
+    container_name: redisContainer
+    ports:
+      - "6379:6379"
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmqContainer
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    
