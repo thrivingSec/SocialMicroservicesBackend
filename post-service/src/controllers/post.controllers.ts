@@ -2,7 +2,7 @@ import { APIError } from "../lib/customError.js";
 import { reqHandler } from "../middlewares/reqHandler.js";
 import { Post } from "../models/post.model.js";
 import { ENV } from "../shared/env.js";
-import { createPostSchema, EXTENDEDREQ } from "../shared/schema.js";
+import { createPostSchema, EXTENDEDREQ, updatePostSchema } from "../shared/schema.js";
 import { deletePostCache } from "../utils/deletePostCache.js";
 import { logger } from "../utils/logger.js";
 import { publishTask } from "../utils/rabbitmqConfig.js";
@@ -118,7 +118,52 @@ export const getPostById = reqHandler(async(req:EXTENDEDREQ, res, next) => {
   })
 })
 
-// update
+export const updatePost = reqHandler(async (req:EXTENDEDREQ, res, next) => {
+  const userId = req.user.userId
+  const postId = req.params.id;
+  if(!postId || typeof postId !== "string"){
+    throw new APIError(400, "Invalid post id.")
+  }
+  const parshed = updatePostSchema.safeParse(req.body);
+  if(!parshed.success){
+    const errMsgArray = await JSON.parse(parshed.error.message);
+    throw new APIError(400, `Validation error, ${errMsgArray[0].message} on field ${errMsgArray[0].path}`)
+  }
+  const {newContent, newMediaIds} = parshed.data;
+  const updatedPost = await Post.findOneAndUpdate(
+    {
+      _id: postId,
+      user: userId,
+    },
+    {
+      $set: {
+        content: newContent,
+        mediaIds: newMediaIds ?? [],
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+    },
+  );
+  if(!updatedPost){
+    throw new APIError(406, "Post does not exists for the given user");
+  }
+  
+  await publishTask(ENV.EXCHANGE_NAME1, "update.post", Buffer.from(JSON.stringify({
+    userId,
+    postId,
+    content:newContent
+  })))
+
+  return res.status(200).json({
+    status:"success",
+    message:"Post update successfully.",
+    date:{
+      updatedPost
+    }
+  })
+})
 
 export const deletePostById = reqHandler(async(req:EXTENDEDREQ, res, next) => {
   const postId = req.params.id;

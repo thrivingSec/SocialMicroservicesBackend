@@ -16,7 +16,7 @@ app.listen(PORT, () => {
               `✅ Identity service is running on http://localhost:${PORT}`,
             );
             logger.info(`✅ Database connected at: ${host}`);
-            logger.info(`✅ RabbitMQ connected at: ${host}`);
+            logger.info(`✅ RabbitMQ connected successfully`);
           }
         })
         .catch((err) => {

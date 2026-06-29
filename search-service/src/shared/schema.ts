@@ -23,3 +23,9 @@ export const deletePostEventSchema = z.object({
 export const deleteUserSchema = z.object({
   deleteUserId:z.string()
 })
+
+export const updatePostSchema = z.object({
+  userId:z.string(),
+  postId:z.string(),
+  content:z.string()
+})

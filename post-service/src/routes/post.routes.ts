@@ -1,6 +1,6 @@
 import express from "express";
 import { authUser } from "../middlewares/auth.js";
-import { createPost, deletePostById, getAllPost, getPostById } from "../controllers/post.controllers.js";
+import { createPost, deletePostById, getAllPost, getPostById, updatePost } from "../controllers/post.controllers.js";
 
 const postRouter = express.Router();
 
@@ -18,6 +18,11 @@ postRouter.get("/posts", authUser, getAllPost)
 // API method: GET
 // API endpoint: localhost:3000/v1/post/:id -> localhost:3001/api/post/:id
 postRouter.get("/:id", authUser, getPostById)
+
+// API dsc: update post
+// API method: PUT
+// API endpoint: localhost:3000/v1/post/update/:id -> localhost:3001/api/post/update/:id
+postRouter.put("/update/:id", authUser, updatePost)
 
 // API dsc: delete post by id
 // API method: DELETE

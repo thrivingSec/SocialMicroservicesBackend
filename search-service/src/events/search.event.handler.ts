@@ -3,6 +3,7 @@ import {
   addPostEventSchema,
   deletePostEventSchema,
   deleteUserSchema,
+  updatePostSchema,
 } from "../shared/schema.js";
 import { deletePostCache } from "../utils/deletePostCache.js";
 import { logger } from "../utils/logger.js";
@@ -81,5 +82,30 @@ export async function deleteUserEventHandler(msg: Buffer) {
     );
   } catch (error: any) {
     logger.error(`Error in deleting media associated with the user.`);
+  }
+}
+export async function updatePostEventHandler(msg: Buffer){
+  const msgObj = JSON.parse(msg.toString());
+  const parshed = updatePostSchema.safeParse(msgObj);
+  if (parshed.success !== true) {
+      const errMsgArray = await JSON.parse(parshed.error.message);
+      logger.error(
+        `Validation error, ${errMsgArray[0].message} on field ${errMsgArray[0].path}`,
+      );
+      return;
+    }
+  const {userId, postId, content} = parshed.data
+  try {
+    const updatedSearchPost = await Search.findOneAndUpdate(
+      {postId, user:userId},
+      {$set: {content}},
+      {new:true, upsert:true}
+    )
+    if(!updatedSearchPost){
+      logger.warn(`Can not update the search index for post ${postId}`);
+    }
+    logger.info(`Serch index updated successfully for the post ${postId}`);
+  } catch (error) {
+    logger.error(`Something went wrong while updating the search index for post updation: ${error}`);
   }
 }
